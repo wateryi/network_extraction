@@ -75,8 +75,9 @@ if __name__=='__main__':
     fpath = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\ndvitiff'
     files = Files(fpath, ext=['*.tiff'])
     imgpaths = files.filesWithPath
-    dest = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\veinAnalysis'
+    dest = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\veinAnalysis_2'
     outParas = {}
+    imgpaths = imgpaths[0:2]
     for ps in imgpaths:
         paras = leafveinAnalysis(ps, dest,
                                  imreadFlag=-1, blursize=5, segBlocksize=51,
@@ -92,8 +93,8 @@ if __name__=='__main__':
                 outParas[k] = [v]
                 
     try:
-        sts.Write.saveDict2csv(dest+'/veinResult.csv', outParas)
-        sts.Write.saveDict2csv(dest+'/veinResult.json', outParas)
+        sts.Write.saveDict2csv(dest+'/veinResult2.csv', outParas)
+        sts.Write.saveDict2csv(dest+'/veinResult2.json', outParas)
     except:
         print('save error')
                 
