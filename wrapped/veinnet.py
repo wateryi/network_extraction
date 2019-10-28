@@ -23,8 +23,15 @@ import net_helpers as nh
 
 
 class SegImage:
-    def __init__(self, path):
+    def __init__(self, path, dest='', isdebug=False):
         self.path = path
+        self.parentPath = os.path.split(path)[0]
+        self.imgname = os.path.split(path)[1].split('.')[0]
+        self.isdebug = isdebug
+        if dest == '':
+            self.dest = self.parentPath + '_output'
+        else:
+            self.dest = dest
 
     def imread(self, flag=cv2.IMREAD_COLOR):
         self.imgraw = cv2.imread(self.path, flag)
@@ -121,7 +128,7 @@ class VeinNet:
         self.height, width = self.distanceMap.shape
 
         if issave:
-            Image.fromarray(distance_map, mode='L')\
+            Image.fromarray(distance_map*250, mode='L')\
                 .save(join(self.dest, self.imageName + "_dm.png"), 'PNG')  # save the distance map in case we need it later
 
         # if debug:
