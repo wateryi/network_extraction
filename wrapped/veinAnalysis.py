@@ -23,7 +23,7 @@ def leafveinAnalysis(fpath, dest,
     
     imagename = os.path.split(fpath)[1].split('.')[0]
     log = 'LVA>>>>>' + imagename
-    segimg = vn.SegImage(fpath)
+    segimg = vn.SegImage(fpath, dest=dest, isdebug=True)
     segimg.imread(flag=imreadFlag)
     
     segimg.togray()
@@ -70,8 +70,41 @@ def leafveinAnalysis(fpath, dest,
     print(log + 'Analysis Done')
     return paras
 
+
+
+def leafveinAnalysis0(fpath, dest,
+                     imreadFlag=-1, blursize=5, segBlocksize=51,
+                     threshBackgrd=1, imgInversed=True,
+                     denoiseSize=71, smoothing=True,
+                     netDebug=True, netVerbose=True,
+                     isShow=True, isSave=True):
+    
+    imagename = os.path.split(fpath)[1].split('.')[0]
+    log = 'LVA>>>>>' + imagename
+    segimg = vn.SegImage(fpath, dest=dest, isdebug=netDebug)
+    segimg.imread(flag=imreadFlag)
+    
+    segimg.togray()
+    segimg.blur(blursize=blursize)
+    segimg.seg(blocksize=segBlocksize, threshBackgrd=threshBackgrd,
+               inversed=imgInversed)
+    if isShow:
+        plt.imshow(segimg.imggray)
+        plt.show()
+        plt.imshow(segimg.imgbinary)
+        plt.show()
+    
+    segimg.denoise(minimum_feature_size = denoiseSize, smoothing=smoothing)
+    if isShow:
+        plt.imshow(segimg.imgbinary)
+        plt.show()
+    
+    print(log + 'SEG>>>>  Done')
+    
+    return 0
+
 #%%
-if __name__=='__main__':
+if __name__=='__main0__':
     fpath = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\ndvitiff'
     files = Files(fpath, ext=['*.tiff'])
     imgpaths = files.filesWithPath
@@ -99,4 +132,18 @@ if __name__=='__main__':
         print('save error')
                 
             
-        
+if __name__=='__main__':
+    fpath = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\ndvitiff'
+    files = Files(fpath, ext=['*.tiff'])
+    imgpaths = files.filesWithPath
+    dest = r'F:\dataProcessed\leafspec\soybean\2019-03-25\leafspecB-20190804\veinAnalysis2'
+    outParas = {}
+    #imgpaths = imgpaths[0:2]
+    for ps in imgpaths:
+        paras = leafveinAnalysis0(ps, dest,
+                                 imreadFlag=-1, blursize=5, segBlocksize=51,
+                                 threshBackgrd=1, imgInversed=True,
+                                 denoiseSize=71, smoothing=True,
+                                 netDebug=True, netVerbose=True,
+                                 isShow=False, isSave=True)
+    
