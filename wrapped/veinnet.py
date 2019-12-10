@@ -23,7 +23,7 @@ import net_helpers as nh
 
 
 class SegImage:
-    def __init__(self, path, dest='', isdebug=False):
+    def __init__(self, path, dest='./', isdebug=False):
         self.path = path
         self.parentPath = os.path.split(path)[0]
         self.imgname = os.path.split(path)[1].split('.')[0]
@@ -64,6 +64,8 @@ class SegImage:
         image = cv2.adaptiveThreshold(self.imggray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                       cv2.THRESH_BINARY, blocksize, 2)
         self.imgbinary = np.where(self.maskBackgrd == 0, 0, image)
+        if self.isdebug:
+            cv2.imwrite(os.path.join(self.dest, self.imgname+'_seg.jpg'), self.imgbinary)
 
     def denoise(self, minimum_feature_size=3000, smoothing=True):
         image = self.imgbinary
@@ -96,6 +98,8 @@ class SegImage:
                                    min_size=minimum_feature_size/100, connectivity=1)
 
         self.imgbinary = image
+        if self.isdebug:
+            cv2.imwrite(os.path.join(self.dest, self.imgname+'_segDenoise.jpg'), self.imgbinary*255)
 
 
 class VeinNet:
@@ -139,7 +143,7 @@ class VeinNet:
             print("\n" + self.pa + "Current step: Contour extraction and thresholding.")
             self.previous_step = step
 
-    def getContours(self):
+    def getContours(self, contourThresh=3):
         """ 
         Contours:
                 - Find the contours of the features present in the image.
@@ -156,7 +160,7 @@ class VeinNet:
             print(self.pa + "\tContours converted, we have %i contour(s)."\
                   % (len(flattened_contours)))
         # filter out contours smaller than 3 in case there are any left
-        flattened_contours = nh.thresholdContours(flattened_contours, 3)
+        flattened_contours = nh.thresholdContours(flattened_contours, contourThresh)
         if self.debug:  # debug output
             nh.drawContours(self.height, flattened_contours, self.imageName, self.dest,
                             self.figure_format, self.dpi)
@@ -379,6 +383,31 @@ class VeinNet:
 
 
 class VeinPara:
+    """Number of junctions in the network. Every node that has more than two neighbors 
+    is considered to be a junction (also called branching point).
+Number of tips in the network. Every node that has exactly one neighbor is considered 
+to be a tip (also called endpoints).
+Total length of the network: The total length is the sum over all individual edge-lengths. 
+It therefore has the dimension [pixels].
+Average edge length: The average edge length is the average of all individual edge-lengths. 
+It therefore has the dimension [pixels].
+Average edge radius: The average edge radius is the average of all individual edge-radii. 
+It therefore has the dimension [pixels].
+Total network area: The total network area is the sum of all individual edge-lengths times 
+individual edge-radii. It therefore has the dimension [pixels^2].
+Area of the convex hull of the network: If we consider all nodes within the networks to be 
+a point cloud and then calculate the convex hull of this point cloud, this is the area of this 
+convex hull. It therefore has the dimension [pixels^2].
+Number of cycles in the network: A cycle in a network is a closed path. Here we do NOT calculate 
+all possible closed paths but calculate the size of the cycle basis of the network. A basis for 
+cycles of a network is a minimal collection of cycles such that any cycle in the network can be
+ written as a sum of cycles in the basis. Therefore the cycle basis of the olympic rings has size 9 (5 rings + 4 overlaps).
+    
+    Returns:
+        [type] -- [description]
+    """
+
+
     def __init__(self, g):
         self.graph = g
 
